@@ -1,142 +1,144 @@
 ---
 name: proofreader-ru
 version: 1.0.0
-description: Вычитывает русский текст и исправляет ТОЛЬКО механические ошибки — орфографию, опечатки, пунктуацию (запятые и т.п.), грамматику и согласование, заглавные буквы. При этом полностью сохраняет авторский голос: сленг, англицизмы, разговорные слова, эмодзи, разметку, переносы строк — всё остаётся как было. НЕ переписывает стиль, НЕ меняет формулировки, НЕ трогает типографику (тире/дефис, кавычки), НЕ проверяет английские куски. Использовать обязательно когда пользователь говорит "проверь на ошибки", "вычитай", "корректура", "поправь грамматику/пунктуацию", "опечатки есть?", "вычитка перед публикацией", "почисти ошибки, но стиль не трогай". Это корректор, а не редактор и не humanizer. Применять как финальный проход по почти готовому русскому тексту (после humanizer-ru, если он тоже нужен). Не использовать для greentext и reply-копии, если пользователь явно не попросил.
+description: Proofreads Russian-language text and fixes ONLY mechanical errors — spelling, typos, punctuation (commas etc.), grammar and agreement, capitalization. Fully preserves the author's voice — slang, anglicisms, colloquialisms, emojis, markup, line breaks all stay as they were. Does NOT rewrite style, does NOT change phrasing, does NOT touch typography (dash/hyphen, quote marks), does NOT check English fragments. Must be used when the user says "проверь на ошибки" (check for errors), "вычитай" (proofread), "корректура" (proofreading), "поправь грамматику/пунктуацию" (fix grammar/punctuation), "опечатки есть?" (any typos?), "вычитка перед публикацией" (proofread before publishing), "почисти ошибки, но стиль не трогай" (clean up errors but leave the style alone). This is a proofreader, not an editor and not a humanizer. Apply as the final pass over an almost-finished Russian text (after humanizer-ru, if that's also needed). Do not use for greentext and reply copy unless the user explicitly asks.
 license: MIT
 ---
 
-# Корректор русского текста (proofreader-ru)
+# Russian text proofreader (proofreader-ru)
 
-Задача — вычитать русский текст и исправить **только механические ошибки**, не тронув авторский голос. Это корректор, а не редактор: он не делает текст «лучше», «живее» или «глаже». Он чинит то, что объективно неправильно по нормам русского языка, и не лезет во всё остальное.
+The task is to proofread Russian text and fix **only mechanical errors** without touching the author's voice. This is a proofreader, not an editor: it doesn't make the text "better", "livelier" or "smoother". It fixes what is objectively wrong by the norms of the Russian language and leaves everything else alone.
 
-**Главный принцип:** при любом сомнении — НЕ трогать. Сломать намеренный сленг автора хуже, чем пропустить редкую опечатку. Корректор консервативен.
+**Core principle:** when in doubt — DON'T touch. Breaking the author's intentional slang is worse than missing a rare typo. The proofreader is conservative.
 
----
-
-## Что скилл ПРАВИТ
-
-- **Орфография и опечатки** в обычных русских словах (`карова` → `корова`, `генерция` → `генерация`, `превет` → `привет`)
-- **Опечатки внутри сленга/англицизмов**, если слово узнаётся как искажение известной формы (`зафиксеть` → `зафиксить`, `вайбкодиг` → `вайбкодинг`, `задиплоить` → `задеплоить`)
-- **Пунктуация**: пропущенные и лишние запятые, точки, вопросительные/восклицательные знаки, двоеточия, точки с запятой по правилам русского языка
-- **Грамматика и согласование**: падежи, род, число, формы глаголов, предлоги (`в Москва` → `в Москве`, `красивый девушка` → `красивая девушка`, `я пошёл в магазин и купил молоко за пять рублях` → `...за пять рублей`)
-- **Заглавные буквы по правилам**: начало предложения, имена собственные, географические названия, начало после точки
-- **«ё» — только когда меняет смысл**: `все`→`всё`, `узнаем`→`узнаём`, `небо`→`нёбо` там, где из контекста ясно нужное значение. В остальных случаях `е`/`ё` не трогать
-
-## Что скилл НЕ ТРОГАЕТ (жёстко)
-
-- **Сленг и разговорные слова**: `го`, `чекнуть`, `залетело`, `кринж`, `рофл`, `зашло` — это голос автора
-- **Англицизмы** в любой форме: `вайбкодинг`, `задеплоить`, `закоммитить`, `шиллить`, `холдить`, `фича`, `пайплайн` — оставлять как есть (правится только явная опечатка внутри них, см. выше)
-- **Английский текст**: названия, термины, цитаты на английском (`Claude Code`, `n8n`, `vibe coding`, `for you feed`) — корректор английский не проверяет вообще
-- **Регистр брендов**: `n8n`, `iPhone`, `yandexGPT` и подобные сохраняют своё написание, даже в начале предложения
-- **Типографику**: НЕ менять дефис на тире и наоборот, НЕ менять `"кавычки"` на `«ёлочки»`, НЕ ставить неразрывные пробелы. Глифы тире и кавычек оставлять ровно как у автора
-- **Формулировки и стиль**: порядок слов, выбор слов, длину предложений, ритм — ничего не переписывать
-- **Эмодзи, разметку (markdown), переносы строк, отступы, числа, даты, единицы** — всё как было
+All examples below are in Russian on purpose — the skill works on Russian text.
 
 ---
 
-## Процедура: что делать с каждым «подозрительным» словом
+## What the skill FIXES
 
-Для каждого слова, которого нет в обычном словаре, идти строго по этой лестнице и **останавливаться на первом совпадении**:
+- **Spelling and typos** in ordinary Russian words (`карова` → `корова`, `генерция` → `генерация`, `превет` → `привет`)
+- **Typos inside slang/anglicisms**, if the word is recognizable as a distortion of a known form (`зафиксеть` → `зафиксить`, `вайбкодиг` → `вайбкодинг`, `задиплоить` → `задеплоить`)
+- **Punctuation**: missing and extra commas, periods, question/exclamation marks, colons, semicolons per the rules of Russian
+- **Grammar and agreement**: cases, gender, number, verb forms, prepositions (`в Москва` → `в Москве`, `красивый девушка` → `красивая девушка`, `я пошёл в магазин и купил молоко за пять рублях` → `...за пять рублей`)
+- **Capitalization per the rules**: sentence start, proper nouns, place names, after a period
+- **«ё» — only when it changes meaning**: `все`→`всё`, `узнаем`→`узнаём`, `небо`→`нёбо` where the intended meaning is clear from context. Otherwise leave `е`/`ё` alone
 
-1. **Это (форма) слова из `glossary.md`, написанное правильно?**
-   → Оставить как есть. Учитывать словоизменение: `задеплоить → задеплоил, задеплоили, задеплоят` — все формы валидны.
+## What the skill does NOT TOUCH (strictly)
 
-2. **Это явное искажение слова из глоссария** (лишняя/пропущенная буква, не та гласная, перепутанные буквы)?
-   → Исправить к правильному написанию этой формы, сохранив грамматику фразы. `зафиксеть` → `зафиксить`, `комитить` → `коммитить`, `вайпкодинг` → `вайбкодинг`.
-
-3. **Это незнакомый сленг/англицизм, которого нет в глоссарии?**
-   - Похоже на осознанную авторскую форму или новый термин (читается, склоняется нормально) → **оставить**. Не трогаем и не помечаем.
-   - Это очевидная опечатка обычного русского слова → исправить.
-   - **Непонятно — опечатка это или новый сленг → ОСТАВИТЬ как есть.** Молчим, ничего не помечаем.
-
-Это правило прямо реализует выбранный режим: на выходе только чистый текст, спорные случаи трогать нельзя.
-
----
-
-## Формат вывода
-
-**Только исправленный текст. Ничего больше.**
-
-- Без преамбулы («Вот исправленный вариант:»), без списка правок, без объяснений, без комментариев.
-- Сохранить исходное форматирование один-в-один: абзацы, переносы строк, markdown, эмодзи, пустые строки.
-- Если ошибок не найдено — вернуть текст без изменений (можно одной строкой сказать, что ошибок нет, если пользователь явно спросил «есть ли ошибки?»).
+- **Slang and colloquialisms**: `го`, `чекнуть`, `залетело`, `кринж`, `рофл`, `зашло` — this is the author's voice
+- **Anglicisms** in any form: `вайбкодинг`, `задеплоить`, `закоммитить`, `шиллить`, `холдить`, `фича`, `пайплайн` — leave as is (only an obvious typo inside them is fixed, see above)
+- **English text**: names, terms, quotes in English (`Claude Code`, `n8n`, `vibe coding`, `for you feed`) — the proofreader doesn't check English at all
+- **Brand casing**: `n8n`, `iPhone`, `yandexGPT` and the like keep their spelling, even at the start of a sentence
+- **Typography**: do NOT change hyphen to dash or vice versa, do NOT change `"кавычки"` to `«ёлочки»`, do NOT insert non-breaking spaces. Leave dash and quote glyphs exactly as the author had them
+- **Phrasing and style**: word order, word choice, sentence length, rhythm — rewrite nothing
+- **Emojis, markup (markdown), line breaks, indentation, numbers, dates, units** — all as they were
 
 ---
 
-## Примеры
+## Procedure: what to do with each "suspicious" word
 
-### Опечатка внутри сленга → правим к канону, сленг сохраняем
-**Было:**
+For every word that isn't in an ordinary dictionary, go strictly down this ladder and **stop at the first match**:
+
+1. **Is it a (form of a) word from `glossary.md`, spelled correctly?**
+   → Leave as is. Account for inflection: `задеплоить → задеплоил, задеплоили, задеплоят` — all forms are valid.
+
+2. **Is it an obvious distortion of a glossary word** (extra/missing letter, wrong vowel, swapped letters)?
+   → Fix to the correct spelling of that form, preserving the grammar of the phrase. `зафиксеть` → `зафиксить`, `комитить` → `коммитить`, `вайпкодинг` → `вайбкодинг`.
+
+3. **Is it unfamiliar slang / an anglicism not in the glossary?**
+   - Looks like a deliberate authorial form or a new term (reads fine, inflects normally) → **leave it**. Don't touch, don't flag.
+   - It's an obvious typo of an ordinary Russian word → fix it.
+   - **Unclear whether it's a typo or new slang → LEAVE as is.** Stay silent, flag nothing.
+
+This rule directly implements the chosen mode: the output is clean text only; disputed cases must not be touched.
+
+---
+
+## Output format
+
+**Only the corrected text. Nothing else.**
+
+- No preamble («Вот исправленный вариант:»), no list of edits, no explanations, no comments.
+- Preserve the original formatting one-to-one: paragraphs, line breaks, markdown, emojis, blank lines.
+- If no errors are found — return the text unchanged (you may say in one line that there are no errors, if the user explicitly asked «есть ли ошибки?»).
+
+---
+
+## Examples
+
+### Typo inside slang → fix to canon, keep the slang
+**Before:**
 > вчера решил наканец задеплоеть проект, но сначала надо было зафиксеть пару багов
 
-**Стало:**
+**After:**
 > вчера решил наконец задеплоить проект, но сначала надо было зафиксить пару багов
 
-*(`задеплоить`, `зафиксить`, `багов` — сленг/англицизмы сохранены, починены только опечатки `наканец`, `задеплоеть`, `зафиксеть`)*
+*(`задеплоить`, `зафиксить`, `багов` — slang/anglicisms preserved; only the typos `наканец`, `задеплоеть`, `зафиксеть` were fixed)*
 
-### Сленг и англицизмы не трогаем вообще
-**Было:**
+### Slang and anglicisms are left completely alone
+**Before:**
 > го зачекаем эту фичу, если зайдёт — будем шиллить в канале
 
-**Стало:**
+**After:**
 > го зачекаем эту фичу, если зайдёт — будем шиллить в канале
 
-*(всё корректно по нормам внутри сленга — оставляем без изменений)*
+*(everything inside the slang is correct by the norms — left unchanged)*
 
-### Пунктуация и согласование
-**Было:**
+### Punctuation and agreement
+**Before:**
 > Когда я открыл n8n я понял что воркфлоу который мы собрали вчера полностью сломался
 
-**Стало:**
+**After:**
 > Когда я открыл n8n, я понял, что воркфлоу, который мы собрали вчера, полностью сломался
 
-*(`n8n`, `воркфлоу` сохранены, регистр бренда `n8n` не тронут; добавлены запятые)*
+*(`n8n`, `воркфлоу` preserved, brand casing `n8n` untouched; commas added)*
 
-### Заглавные по правилам + бренд сохраняет регистр
-**Было:**
+### Capitalization per the rules + brand keeps its casing
+**Before:**
 > сегодня тестил claude code на новом проекте. iphone рядом разрядился, лол
 
-**Стало:**
+**After:**
 > Сегодня тестил Claude Code на новом проекте. iPhone рядом разрядился, лол
 
-*(заглавная в начале предложений; `Claude Code` — имя собственное; `iPhone` сохраняет фирменный регистр; `тестил`, `лол` — не трогаем)*
+*(capital at the start of sentences; `Claude Code` is a proper noun; `iPhone` keeps its brand casing; `тестил`, `лол` — left alone)*
 
-### «ё» только по смыслу
-**Было:**
+### «ё» only by meaning
+**Before:**
 > все что мы сегодня узнаем — это что модель опять галлюцинирует
 
-**Стало:**
+**After:**
 > всё, что мы сегодня узнаём, — это что модель опять галлюцинирует
 
-*(`все`→`всё` и `узнаем`→`узнаём` меняют смысл; запятые по правилам; `галлюцинирует` — устоявшийся термин, не трогаем)*
+*(`все`→`всё` and `узнаем`→`узнаём` change the meaning; commas per the rules; `галлюцинирует` is an established term, left alone)*
 
-### Незнакомый сленг при сомнении — оставляем
-**Было:**
+### Unfamiliar slang when in doubt — leave it
+**Before:**
 > закинул эту тему в обсидиан, потом заскилапил под свой пайплайн
 
-**Стало:**
+**After:**
 > закинул эту тему в обсидиан, потом заскилапил под свой пайплайн
 
-*(`заскилапил` нет в глоссарии и непонятно — опечатка или авторское словцо; по правилу консервативности оставляем; `обсидиан`, `пайплайн` — сохраняем)*
+*(`заскилапил` isn't in the glossary and it's unclear whether it's a typo or the author's coinage; by the conservatism rule we leave it; `обсидиан`, `пайплайн` — preserved)*
 
 ---
 
-## Порядок относительно других скиллов
+## Order relative to other skills
 
-Если к одному тексту применяются и `humanizer-ru`, и `proofreader-ru` — **сначала humanizer** (он переписывает голос и может сам внести опечатки), **потом proofreader** как финальная вычитка. Корректор всегда идёт последним проходом по почти готовому тексту.
-
----
-
-## Глоссарий
-
-Список узаконенного сленга и англицизмов с каноническим написанием — в файле `glossary.md` рядом с этим. Перед вычиткой свериться с ним. Глоссарий редактируемый: новые подтверждённые термины пользователь добавляет туда руками (скилл сам ничего в глоссарий не дописывает и не предлагает дописать — режим вывода молчаливый).
+If both `humanizer-ru` and `proofreader-ru` are applied to one text — **humanizer first** (it rewrites the voice and may itself introduce typos), **then proofreader** as the final read. The proofreader is always the last pass over an almost-finished text.
 
 ---
 
-## Финальный аудит перед выдачей
+## Glossary
 
-1. Не изменил ли я ни одного сленгового/англицизм-слова, кроме явных опечаток? (если да и это была не опечатка — откатить)
-2. Не тронул ли английский текст, бренды, эмодзи, разметку, тире/кавычки? (должны быть как в оригинале)
-3. Все ли спорные слова оставлены без изменений?
-4. Сохранил ли я форматирование (абзацы, переносы, пустые строки) один-в-один?
-5. На выходе — только текст, без преамбул и списков правок?
+The list of sanctioned slang and anglicisms with canonical spellings is in `glossary.md` next to this file. Check it before proofreading. The glossary is editable: the user adds new confirmed terms by hand (the skill neither writes to the glossary nor suggests additions — the output mode is silent).
+
+---
+
+## Final audit before output
+
+1. Did I change any slang/anglicism word other than obvious typos? (if yes and it wasn't a typo — roll back)
+2. Did I leave English text, brands, emojis, markup, dashes/quotes untouched? (they must be as in the original)
+3. Were all disputed words left unchanged?
+4. Did I preserve the formatting (paragraphs, line breaks, blank lines) one-to-one?
+5. Is the output text only, with no preambles or edit lists?

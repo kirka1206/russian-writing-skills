@@ -1,233 +1,235 @@
 ---
 name: editor-ru
 version: 1.0.0
-description: Структурный редактор русского текста. Переписывает ради ясности и плотности в оптике «Пиши, сокращай» / Ильяхова — режет воду, убирает повторы мысли, чинит логику и переходы, переставляет абзацы, распутывает переусложнённые предложения, выравнивает «обещал — раскрыл». Самодостаточный: на выходе чистый плотный текст. Использовать когда пользователь говорит "отредактируй", "много воды", "сократи", "структура хромает", "запутанно/нелогично", "приведи текст в порядок", "сделай плотнее/яснее", "разрозненно", "перескакивает". НЕ трогает анти-ИИ-паттерны (ИИ-лексика, канцелярит как стиль, тире-передоз, rule of three, менторский тон) — это зона humanizer-ru. НЕ корректура (орфография/пунктуация) — это proofreader-ru. Логический порядок прогона: editor-ru → humanizer-ru → proofreader-ru, но editor-ru работает и в одиночку.
+description: Structural editor for Russian-language text. Rewrites for clarity and density in the lens of «Пиши, сокращай» / Maxim Ilyakhov — cuts fluff, removes repeated ideas, fixes logic and transitions, reorders paragraphs, untangles overcomplicated sentences, aligns "promised — delivered". Self-sufficient: the output is clean, dense text. Use when the user says "отредактируй" (edit this), "много воды" (too much fluff), "сократи" (shorten), "структура хромает" (the structure is weak), "запутанно/нелогично" (confusing / illogical), "приведи текст в порядок" (tidy up the text), "сделай плотнее/яснее" (make it denser / clearer), "разрозненно" (disjointed), "перескакивает" (it jumps around). Does NOT touch anti-AI patterns (AI vocabulary, bureaucratese as style, dash overdose, rule of three, mentor tone) — that is humanizer-ru's zone. NOT proofreading (spelling/punctuation) — that is proofreader-ru. Logical pipeline order is editor-ru → humanizer-ru → proofreader-ru, but editor-ru also works on its own.
 license: MIT
 ---
 
-# Editor для русского текста
+# Editor for Russian text
 
-Задача — сделать русский текст ясным и плотным: убрать всё, что не несёт информации, выстроить логику, выровнять структуру. Это редактор в оптике «Пиши, сокращай»: каждое предложение должно работать, каждый абзац — нести одну мысль, текст в целом — вести читателя без скачков и петель.
+The task is to make Russian text clear and dense: remove everything that carries no information, build the logic, straighten the structure. This is an editor in the lens of «Пиши, сокращай»: every sentence must work, every paragraph must carry one idea, and the text as a whole must lead the reader without jumps and loops.
 
-Это **не** humanizer. Editor не спрашивает «не пахнет ли нейронкой» — он спрашивает «понятно ли, плотно ли, в правильном ли порядке». Оба могут переписать одно предложение, но по разным причинам.
+This is **not** a humanizer. The editor doesn't ask "does this smell like a neural net" — it asks "is it clear, is it dense, is it in the right order". Both may rewrite the same sentence, but for different reasons.
 
-## Скоуп скилла
+All examples below are in Russian on purpose — the skill works on Russian text.
 
-**Покрывает:**
-- Лонгриды vc.ru, Хабр, статьи, эссе
-- Средние и длинные посты для Telegram (narrative-формат)
-- Аналитические разборы, обзоры, рассуждения
-- Заметки и черновики, которые нужно привести в порядок
+## Scope
 
-**Не покрывает** (там своя оптика / свои скиллы):
-- Анти-ИИ-чистка (ИИ-лексика, канцелярит как маркер, тире-передоз, парность, rule of three, менторский тон) → `humanizer-ru`
-- Орфография, пунктуация, опечатки, согласование → `proofreader-ru`
-- Greentext, reply-копия (1–2 предложения), скрипты под видео — там свой ритм
+**Covers:**
+- Long-reads on vc.ru, Habr, articles, essays
+- Medium and long Telegram posts (narrative format)
+- Analytical breakdowns, reviews, opinion pieces
+- Notes and drafts that need tidying up
 
-**Граница с humanizer-ru (важно):**
-Editor правит предложение ради ясности и плотности. Humanizer — ради удаления ИИ-отпечатка. Если editor видит ИИ-маркер (например, «в современном мире» или «не просто инструмент, а решение») — он его **не трогает как стилистику**. Но если этот же оборот вдобавок ещё и вода/повтор — режет по своей логике. Сомневаешься, чья это правка → если причина «звучит как ИИ» — пропускай (humanizer), если «не несёт информации / запутано / не на месте» — правь.
+**Does not cover** (different lens / different skills):
+- Anti-AI cleanup (AI vocabulary, bureaucratese as a marker, dash overdose, pairing, rule of three, mentor tone) → `humanizer-ru`
+- Spelling, punctuation, typos, agreement → `proofreader-ru`
+- Greentext, reply copy (1–2 sentences), video scripts — different rhythm
 
----
-
-## Режимы по длине
-
-- **Полный режим** (текст ≥ 100 слов): все разделы, включая перестановку абзацев и блоков.
-- **Мягкий режим** (текст < 100 слов): только Разделы 1, 2, 5 (вода, повтор мысли, распутывание фраз). **Перестановки и реструктуризацию НЕ делать** — на коротком тексте нечего переставлять, легко сломать единственную мысль.
+**Boundary with humanizer-ru (important):**
+The editor edits a sentence for clarity and density. The humanizer — to remove the AI fingerprint. If the editor sees an AI marker (e.g. «в современном мире» or «не просто инструмент, а решение») — it **doesn't touch it as stylistics**. But if that same phrase is also fluff/repetition — it cuts it under its own logic. Unsure whose edit it is → if the reason is "sounds like AI" — skip it (humanizer); if "carries no information / confusing / out of place" — edit.
 
 ---
 
-## Базовый процесс
+## Modes by length
 
-1. Прочитать текст целиком. Поймать: о чём он, что главное, где теряешься как читатель.
-2. Определить режим по длине (100 слов — порог).
-3. Пройти по разделам 1–8 (в мягком режиме — 1, 2, 5).
-4. Переписать: не точечная замена слов, а перестройка фраз, абзацев, порядка.
-5. Прогнать финальный аудит (счётчики + чтение на разрывы логики).
-6. Проверить защиту от перегиба — не ужал ли до телеграфа, не потерял ли мысли.
-
-**Главный принцип:** мысли не теряем. Editor делает текст плотнее и яснее, но ни один авторский тезис, пример или нюанс не должен пропасть. Если тезис слабый — его не выкидывают, а ставят на правильное место или сцепляют с соседним. Выкидывание тезисов — это другой, более агрессивный режим, его тут нет.
+- **Full mode** (text ≥ 100 words): all sections, including reordering paragraphs and blocks.
+- **Soft mode** (text < 100 words): Sections 1, 2, 5 only (fluff, repeated ideas, untangling phrases). **Do NOT reorder or restructure** — in a short text there's nothing to reorder and it's easy to break the one idea it has.
 
 ---
 
-## Раздел 1. Вода
+## Basic process
 
-Предложения и обороты, которые не несут информации. Не путать с ИИ-затычками (это humanizer) — здесь про содержательную пустоту независимо от происхождения.
+1. Read the whole text. Catch: what it's about, what's the main point, where you get lost as a reader.
+2. Determine the mode by length (100 words is the threshold).
+3. Go through Sections 1–8 (in soft mode — 1, 2, 5).
+4. Rewrite: not word-by-word replacement, but restructuring phrases, paragraphs, order.
+5. Run the final audit (counters + reading for logical breaks).
+6. Check the overshoot protection — didn't squeeze it down to telegraph style, didn't lose ideas.
 
-**Маркеры:**
-- Подводки к подводкам: «давайте разберёмся», «обо всём по порядку», «прежде чем продолжить, important...»
-- Самоочевидное: «как мы все знаем», «ни для кого не секрет», «общеизвестно, что»
-- Предложения-связки без содержания: «итак, мы выяснили, что...» (а дальше повтор уже сказанного)
-- Расшаркивания: «в этой статье я хочу рассказать о том, как...» (вместо того, чтобы сразу рассказать)
-- Объявление структуры там, где она и так видна: «сначала рассмотрим А, потом Б, потом В» — если А/Б/В дальше идут подряд
+**Core principle:** we don't lose ideas. The editor makes the text denser and clearer, but not a single authorial point, example or nuance may disappear. If a point is weak — it isn't thrown out, it's put in the right place or joined to its neighbor. Throwing out points is a different, more aggressive mode, and it isn't here.
 
-**Лечение:** удалить целиком. Проверка: убери предложение — если смысл текста не пострадал, оно было водой.
+---
 
-**Было:**
+## Section 1. Fluff
+
+Sentences and phrases that carry no information. Not to be confused with AI filler (that's the humanizer) — this is about substantive emptiness regardless of origin.
+
+**Markers:**
+- Lead-ins to lead-ins: «давайте разберёмся», «обо всём по порядку», «прежде чем продолжить, important...»
+- The self-evident: «как мы все знаем», «ни для кого не секрет», «общеизвестно, что»
+- Contentless connective sentences: «итак, мы выяснили, что...» (followed by a repeat of what was already said)
+- Bowing and scraping: «в этой статье я хочу рассказать о том, как...» (instead of just telling)
+- Announcing structure that's visible anyway: «сначала рассмотрим А, потом Б, потом В» — when A/B/C follow right after
+
+**Fix:** delete entirely. Test: remove the sentence — if the meaning of the text didn't suffer, it was fluff.
+
+**Before:**
 > Прежде чем мы перейдём к настройке, давайте разберёмся, что вообще такое webhook и зачем он нужен. Это важно понимать. Итак, webhook — это...
 
-**Стало:**
+**After:**
 > Webhook — это...
 
 ---
 
-## Раздел 2. Повтор мысли
+## Section 2. Repeated ideas
 
-Одна идея высказана дважды (трижды) в разных местах, разными словами. Читатель буксует: «это же уже было».
+One idea stated twice (three times) in different places, in different words. The reader stalls: "this was already said".
 
-**Где искать:**
-- Вступление дублирует первый содержательный абзац
-- Вывод повторяет вступление
-- Внутри абзаца вторая половина перефразирует первую
-- Тезис заявлен, потом «другими словами» сказан снова без нового содержания
+**Where to look:**
+- The intro duplicates the first substantive paragraph
+- The conclusion repeats the intro
+- Within a paragraph, the second half paraphrases the first
+- A point is stated, then «другими словами» restated with no new content
 
-**Лечение:** оставить самую сильную/конкретную формулировку, остальные убрать. Если повтор разнесён по тексту — оставить там, где он работает лучше (обычно ближе к раскрытию).
+**Fix:** keep the strongest / most specific formulation, remove the rest. If the repetition is spread across the text — keep it where it works better (usually closer to the elaboration).
 
-**Было:**
+**Before:**
 > Скорость — ключевой фактор. [...абзац...] Как уже было сказано, важнее всего здесь именно быстрота реакции. По сути, всё упирается в то, насколько быстро система отвечает.
 
-**Стало:**
+**After:**
 > Скорость — ключевой фактор. [...абзац...] Всё упирается в то, как быстро система отвечает.
 
 ---
 
-## Раздел 3. Логика и переходы
+## Section 3. Logic and transitions
 
-Абзацы не сцеплены: между ними скачок, пропущено звено, нет причинно-следственной нити. Читатель не понимает, почему за этим следует то.
+Paragraphs aren't linked: a jump between them, a missing link, no cause-and-effect thread. The reader doesn't understand why this follows that.
 
-**Маркеры:**
-- Резкая смена темы без перехода
-- Вывод, не вытекающий из сказанного («поэтому» там, где нет «потому что»)
-- Пропущенное звено: A → C, минуя B, которое нужно для понимания
-- Абзац, который мог бы стоять где угодно (не привязан к соседям)
+**Markers:**
+- Abrupt topic change with no transition
+- A conclusion that doesn't follow from what was said («поэтому» where there's no «потому что»)
+- A missing link: A → C, skipping the B needed to understand
+- A paragraph that could stand anywhere (not tied to its neighbors)
 
-**Лечение:** добавить недостающее звено или связку; если звено есть, но не на месте — перенести (см. Раздел 4). Связка — это не слово-маркер («таким образом»), а содержательный мостик: что из чего следует.
+**Fix:** add the missing link or connective; if the link exists but is out of place — move it (see Section 4). A connective is not a marker word («таким образом») but a substantive bridge: what follows from what.
 
-**Было:**
+**Before:**
 > Мы выбрали Postgres. Команда быстро вышла на нужную скорость разработки.
 
-**Стало:**
+**After:**
 > Мы выбрали Postgres — у половины команды уже был с ним опыт. Поэтому на нужную скорость разработки вышли быстро.
 
 ---
 
-## Раздел 4. Порядок
+## Section 4. Order
 
-Главное закопано в середину или конец; ответ дан раньше вопроса; вывод стоит перед посылками, которые его обосновывают. Информация подана в порядке, в котором автор о ней думал, а не в котором читателю удобно её усваивать.
+The main point is buried in the middle or at the end; the answer comes before the question; the conclusion precedes the premises that justify it. Information is presented in the order the author thought of it, not in the order the reader can absorb it.
 
-**Маркеры:**
-- Самый важный тезис — в третьем абзаце, а первые два к нему подводят водой
-- Ключевой результат / цифра спрятаны в середине абзаца
-- Сначала длинная преамбула, потом суть
-- Список идёт не по важности и не по логике, а как попало
+**Markers:**
+- The most important point is in the third paragraph, and the first two lead up to it with fluff
+- The key result / number is hidden in the middle of a paragraph
+- A long preamble first, then the substance
+- A list ordered neither by importance nor by logic, but at random
 
-**Лечение:** поднять главное вверх (или туда, где оно сработает). Выстроить осознанный порядок: от важного к деталям, от проблемы к решению, от частного к общему — выбрать один и держать. **Перестановки — только в полном режиме.**
+**Fix:** lift the main point up (or to where it will work). Build a deliberate order: from important to details, from problem to solution, from specific to general — pick one and hold it. **Reordering — full mode only.**
 
 ---
 
-## Раздел 5. Переусложнённые предложения
+## Section 5. Overcomplicated sentences
 
-Вложенность на 3–4 уровня, причастные паровозы, придаточные внутри придаточных. Грамматически верно, но читатель теряет нить к середине предложения.
+Nesting 3–4 levels deep, trains of participles, subordinate clauses inside subordinate clauses. Grammatically correct, but the reader loses the thread halfway through the sentence.
 
-**Маркеры:**
-- Предложение длиннее ~30 слов с несколькими запятыми-вложениями
-- Два-три причастных/деепричастных оборота подряд
-- Подлежащее и сказуемое разнесены половиной предложения
-- Чтобы понять, приходится перечитывать
+**Markers:**
+- A sentence longer than ~30 words with several comma-nested clauses
+- Two or three participial clauses in a row
+- Subject and predicate separated by half the sentence
+- You have to reread to understand
 
-**Лечение:** расщепить на 2–3 предложения. Распутать вложенность — вынести вложенную мысль в отдельное предложение. Это про разборчивость, не про «звучит как ИИ».
+**Fix:** split into 2–3 sentences. Untangle the nesting — move the nested idea into a separate sentence. This is about legibility, not about "sounds like AI".
 
-**Было:**
+**Before:**
 > Система, которая, как мы выяснили в ходе тестирования, проведённого на прошлой неделе командой, отвечавшей за нагрузку, не справлялась с пиками, была заменена.
 
-**Стало:**
+**After:**
 > На прошлой неделе команда нагрузки протестировала систему. Она не справлялась с пиками — её заменили.
 
 ---
 
-## Раздел 6. Абзац = одна мысль
+## Section 6. Paragraph = one idea
 
-Слипшиеся абзацы (в одном — три разные мысли) или, наоборот, рваные обрубки по одному предложению, разбивающие единую мысль.
+Fused paragraphs (three different ideas in one) or, conversely, ragged one-sentence stubs that break up a single idea.
 
-**Лечение:**
-- Абзац с несколькими мыслями → разбить по мыслям
-- Цепочка обрубков об одном → склеить в абзац
-- Контроль ритма блоков: не три длинных подряд, не десять однострочных подряд
+**Fix:**
+- A paragraph with several ideas → split by idea
+- A chain of stubs about one thing → merge into a paragraph
+- Control the block rhythm: not three long ones in a row, not ten one-liners in a row
 
-**Проверка:** к каждому абзацу можно подобрать одно короткое название его мысли? Если названий два-три — абзац надо делить.
-
----
-
-## Раздел 7. Обещал — раскрыл
-
-Текст заявляет тему/вопрос и не раскрывает; или начинает мысль и бросает; или подзаголовок обещает одно, а абзац под ним про другое.
-
-**Маркеры:**
-- Вступление обещает «расскажу, как», а «как» в тексте нет
-- Заданный вопрос остаётся без ответа
-- Тезис «у этого три причины» → раскрыты две
-- Висящий хвост: «об этом — ниже», а ниже об этом ничего
-
-**Лечение:** либо дописать раскрытие (если автор явно подразумевал и материал есть), либо убрать обещание. Не выдумывать содержание, которого в тексте нет — если раскрытия нет и достать его неоткуда, снять обещание и пометить пользователю, что тезис недокрыт.
+**Test:** can you give each paragraph one short name for its idea? If there are two or three names — the paragraph needs splitting.
 
 ---
 
-## Раздел 8. Заголовки и подзаголовки (лонгриды)
+## Section 7. Promised — delivered
 
-В длинном тексте заголовки либо структурируют, либо декорация. Декоративные — мешают: обещают навигацию, а не дают.
+The text announces a topic/question and doesn't deliver; or starts a thought and drops it; or a subheading promises one thing and the paragraph under it is about another.
 
-**Маркеры:**
-- Подзаголовок не отражает содержание блока под ним
-- Подзаголовки в одном тексте в разной логике (то вопрос, то тема, то призыв)
-- Кликбейт-подзаголовок, не выполняющий обещание (пересекается с Разделом 7)
-- Блок текста на 800 слов без единого подзаголовка
+**Markers:**
+- The intro promises «расскажу, как», and the "how" isn't in the text
+- A posed question is left unanswered
+- The claim «у этого три причины» → two are covered
+- A dangling tail: «об этом — ниже», and below there's nothing about it
 
-**Лечение:** привести подзаголовки в соответствие содержанию, держать единую логику формулировок, разбить слишком длинные блоки. Если подзаголовок ничего не структурирует — убрать.
+**Fix:** either write the missing elaboration (if the author clearly meant to and the material is there), or remove the promise. Don't invent content that isn't in the text — if there's no elaboration and nowhere to get it, drop the promise and flag to the user that the point is under-covered.
 
 ---
 
-## Финальный аудит (обязательный шаг)
+## Section 8. Headings and subheadings (long-reads)
 
-### Счётчики
+In a long text, headings either structure or decorate. Decorative ones get in the way: they promise navigation and don't provide it.
 
-| Что считаем | Норма | Если хуже |
+**Markers:**
+- A subheading doesn't reflect the content of the block under it
+- Subheadings in one text follow different logics (now a question, now a topic, now a call to action)
+- A clickbait subheading that doesn't deliver on its promise (overlaps with Section 7)
+- An 800-word block of text without a single subheading
+
+**Fix:** bring subheadings in line with content, keep a single logic of phrasing, split blocks that are too long. If a subheading structures nothing — remove it.
+
+---
+
+## Final audit (mandatory step)
+
+### Counters
+
+| What we count | Norm | If worse |
 |---|---|---|
-| Предложения-вода (можно убрать без потери смысла) | 0 | убрать все |
-| Повторы одной мысли | 0 | оставить одну формулировку |
-| Средняя длина предложения | разнобой, есть короткие (3–8 слов) | расщепить длинные |
-| Предложения длиннее ~30 слов с вложенностью | 0–1 на текст | расщепить |
-| Абзацы с >1 мыслью | 0 | разбить |
-| Заявленные, но не раскрытые тезисы | 0 | дописать или снять обещание |
-| Декоративные подзаголовки | 0 | переписать или убрать |
+| Fluff sentences (removable without loss of meaning) | 0 | remove all |
+| Repeats of one idea | 0 | keep one formulation |
+| Average sentence length | varied, with short ones (3–8 words) | split long ones |
+| Sentences longer than ~30 words with nesting | 0–1 per text | split |
+| Paragraphs with >1 idea | 0 | split |
+| Points announced but not delivered | 0 | write it or drop the promise |
+| Decorative subheadings | 0 | rewrite or remove |
 
-### Проверки
+### Checks
 
-1. **Главное — вверху?** Самый сильный тезис/результат не закопан в середину.
-2. **Логическая нить:** прочитать только первые предложения абзацев подряд — складывается ли скелет рассуждения? Если нет — порядок или переходы сломаны.
-3. **Каждый абзац на месте?** Можно ли его переставить без потери смысла? Если да — связи с соседями нет.
-4. **Обещанное = раскрытое?** Всё, что заявлено во вступлении/подзаголовках, отработано.
-5. **Чтение вслух на разрывы:** где спотыкаешься на логике («почему вдруг это?») — там дыра в переходе.
+1. **Is the main point at the top?** The strongest point/result isn't buried in the middle.
+2. **Logical thread:** read only the first sentences of the paragraphs in a row — does the skeleton of the argument hold together? If not — the order or the transitions are broken.
+3. **Is every paragraph in its place?** Can it be moved without loss of meaning? If yes — there's no connection to its neighbors.
+4. **Promised = delivered?** Everything announced in the intro/subheadings is worked through.
+5. **Reading aloud for breaks:** where you stumble on the logic («почему вдруг это?») — there's a hole in the transition.
 
 ---
 
-## Защита от перегиба (обратные проверки)
+## Overshoot protection (reverse checks)
 
-Editor режет — но не до костей. Признаки, что зашёл слишком далеко:
+The editor cuts — but not to the bone. Signs you've gone too far:
 
-| Симптом | Что не так | Откат |
+| Symptom | What's wrong | Rollback |
 |---|---|---|
-| Текст стал телеграфным, рублеными фразами | переужал | вернуть связность, объединить часть предложений |
-| Пропал авторский пример / цифра / нюанс | потерял содержание | вернуть — мысли и факты не выкидываем |
-| Все предложения стали одной длины | убил ритм | оставить разнобой длин |
-| Живой текст стал сухим конспектом | вычистил голос вместе с водой | вернуть авторские формулировки, где они работали |
-| Перестроил порядок так, что автор бы не узнал свой текст | перелопатил без нужды | минимальные перестановки, только где порядок реально мешал |
+| The text became telegraphic, chopped phrases | over-compressed | restore connectedness, merge some sentences |
+| An author's example / number / nuance disappeared | lost content | restore — we don't throw out ideas and facts |
+| All sentences became the same length | killed the rhythm | keep varied lengths |
+| Lively text became a dry summary | scrubbed the voice out along with the fluff | restore the author's phrasings where they worked |
+| Reordered so much the author wouldn't recognize their text | reshuffled without need | minimal moves, only where the order really got in the way |
 
-**Правило:** editor улучшает читаемость авторского текста, а не пишет свой. Если после правки это уже текст редактора, а не автора — откатить.
+**Rule:** the editor improves the readability of the author's text, it doesn't write its own. If after editing this is the editor's text rather than the author's — roll back.
 
 ---
 
-## Пример применения
+## Worked example
 
-### Было (черновик):
+### Before (draft):
 
 > В этой статье я хочу подробно рассказать о том, как мы мигрировали на новую базу данных. Прежде чем мы начнём, давайте разберёмся, почему вообще возникла такая необходимость.
 >
@@ -235,14 +237,14 @@ Editor режет — но не до костей. Признаки, что за
 >
 > Мы рассмотрели несколько вариантов и в итоге выбрали Postgres, потому что у части команды, которая, как выяснилось в ходе обсуждения на одном из созвонов, имела релевантный опыт работы именно с этой СУБД ещё на прошлых проектах, уже были нужные навыки. Миграция заняла три недели. Как уже было сказано, скорость для нас была критична, и именно поэтому Postgres подошёл.
 
-**Что не так:**
-- «В этой статье хочу рассказать», «прежде чем начнём, давайте разберёмся» — вода (Р1)
-- Второй абзац: три предложения об одном (медленно) — повтор мысли (Р2)
-- Третий абзац: предложение про выбор Postgres переусложнено вложенностью (Р5)
-- «Как уже было сказано, скорость критична» — повтор вступительного тезиса (Р2)
-- Логика «выбрали Postgres → опыт команды» сцеплена правильно, но утоплена в воде (Р3)
+**What's wrong:**
+- «В этой статье хочу рассказать», «прежде чем начнём, давайте разберёмся» — fluff (S1)
+- Second paragraph: three sentences about one thing (slow) — repeated idea (S2)
+- Third paragraph: the sentence about choosing Postgres is overcomplicated by nesting (S5)
+- «Как уже было сказано, скорость критична» — repeat of the opening point (S2)
+- The logic "chose Postgres → team experience" is linked correctly, but drowned in fluff (S3)
 
-### Стало:
+### After:
 
 > Мы мигрировали на Postgres. Рассказываю почему и как.
 >
@@ -250,39 +252,39 @@ Editor режет — но не до костей. Признаки, что за
 >
 > Из вариантов выбрали Postgres — у части команды уже был с ним опыт с прошлых проектов. Миграция заняла три недели.
 
-**Что сделано:**
-- Убрана вступительная вода, текст открывается сутью
-- Три предложения про «медленно» свёрнуты в одно с двумя конкретными фактами
-- Переусложнённое предложение про опыт команды расщеплено и распутано
-- Убран повтор «скорость критична»
-- Мысли и факты сохранены все: миграция, причина, выбор, опыт команды, срок
+**What was done:**
+- Removed the opening fluff, the text opens with the substance
+- Three sentences about "slow" collapsed into one with two concrete facts
+- The overcomplicated sentence about team experience split and untangled
+- Removed the repeat «скорость критична»
+- All ideas and facts preserved: the migration, the reason, the choice, team experience, the timeline
 
 ---
 
-## Краткая шпаргалка
+## Cheat sheet
 
-**Что чиним всегда:**
+**Always fix:**
 
-1. Подводки и расшаркивания («давайте разберёмся», «в этой статье хочу») → удалить, начать с сути
-2. Самоочевидное («как мы все знаем») → удалить
-3. Повтор одной мысли в разных местах → оставить одну формулировку
-4. Скачок между абзацами → дописать звено или связку
-5. Главное закопано в середину → поднять вверх (полный режим)
-6. Предложение на 30+ слов с вложенностью → расщепить
-7. Абзац с тремя мыслями → разбить
-8. Заявленный, но не раскрытый тезис → дописать или снять обещание
-9. Декоративный подзаголовок → переписать или убрать
+1. Lead-ins and throat-clearing («давайте разберёмся», «в этой статье хочу») → delete, start with the substance
+2. The self-evident («как мы все знаем») → delete
+3. One idea repeated in different places → keep one formulation
+4. A jump between paragraphs → add the link or connective
+5. The main point buried in the middle → lift it up (full mode)
+6. A 30+ word sentence with nesting → split
+7. A paragraph with three ideas → split
+8. A point announced but not delivered → write it or drop the promise
+9. A decorative subheading → rewrite or remove
 
-**Что НЕ делаем:**
+**Never do:**
 
-1. Не выкидываем авторские мысли, примеры, цифры — только уплотняем и переставляем
-2. Не режем до телеграфного стиля
-3. Не трогаем ИИ-лексику/канцелярит/тире как стилистику — это humanizer-ru
-4. Не лезем в орфографию и пунктуацию — это proofreader-ru
-5. На коротком тексте (<100 слов) — не переставляем, только вода + ясность
+1. Don't throw out the author's ideas, examples, numbers — only tighten and reorder
+2. Don't cut down to telegraph style
+3. Don't touch AI vocabulary / bureaucratese / dashes as stylistics — that's humanizer-ru
+4. Don't go near spelling and punctuation — that's proofreader-ru
+5. On short text (<100 words) — don't reorder, only fluff + clarity
 
 ---
 
-## Версионирование
+## Versioning
 
-- **v1.0.0** (текущая) — первая версия. Структурный редактор русского текста в оптике ясности/плотности. Самодостаточный, разведён с `humanizer-ru` по оптике (editor правит ради ясности, humanizer — ради удаления ИИ-отпечатка) и с `proofreader-ru` по слою (editor — структура и смысл, proofreader — механика). Логический порядок прогона: editor-ru → humanizer-ru → proofreader-ru.
+- **v1.0.0** (current) — first version. Structural editor for Russian text in the clarity/density lens. Self-sufficient, separated from `humanizer-ru` by lens (editor edits for clarity, humanizer to remove the AI fingerprint) and from `proofreader-ru` by layer (editor — structure and meaning, proofreader — mechanics). Logical pipeline order: editor-ru → humanizer-ru → proofreader-ru.

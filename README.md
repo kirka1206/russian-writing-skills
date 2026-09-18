@@ -1,65 +1,67 @@
 # ru-text-skills
 
-Три скилла для работы с русским текстом в [Claude](https://claude.ai) / Claude Code. Каждый отвечает за свой слой и не лезет в чужой — их можно запускать по отдельности или собирать в один pipeline.
+🇷🇺 [Русская версия](README.ru.md)
 
-| Скилл | Что делает | Слой |
+Three skills for working with Russian-language text in [Claude](https://claude.ai) / Claude Code. Each owns its own layer and stays out of the others' — run them separately or chain them into one pipeline.
+
+| Skill | What it does | Layer |
 |---|---|---|
-| **editor-ru** | Режет воду, чинит логику и порядок, распутывает фразы, уплотняет текст | Структура и смысл |
-| **humanizer-ru** | Убирает признаки ИИ-генерации, оставляя живой авторский голос | Стиль |
-| **proofreader-ru** | Правит орфографию, пунктуацию, опечатки, согласование | Механика |
+| **editor-ru** | Cuts fluff, fixes logic and ordering, untangles phrases, tightens the text | Structure and meaning |
+| **humanizer-ru** | Removes signs of AI generation while keeping a living authorial voice | Style |
+| **proofreader-ru** | Fixes spelling, punctuation, typos, agreement | Mechanics |
 
-## Зачем это
+## Why
 
-Дефолтный текст от ИИ узнаётся за секунду: вода во вступлениях, штампы вроде «в современном мире», тире-передоз, идеально гладкий ритм, в котором не слышно живого человека. Один промпт «сделай лучше» чинит всё сразу и плохо — потому что «структура», «ИИ-отпечаток» и «запятые» — это три разные задачи с разной оптикой.
+Default AI text is recognizable in a second: watery intros, clichés like «в современном мире», dash overdose, a perfectly smooth rhythm with no living person audible in it. A single "make it better" prompt fixes everything at once and badly — because "structure", "AI fingerprint" and "commas" are three different jobs with three different lenses.
 
-Поэтому здесь три отдельных скилла. Каждый знает свою зону и **не трогает чужую**: editor не лезет в запятые, proofreader не переписывает стиль, humanizer не выкидывает авторские мысли.
+Hence three separate skills. Each knows its zone and **doesn't touch the others'**: editor doesn't fiddle with commas, proofreader doesn't rewrite style, humanizer doesn't throw out the author's ideas.
 
 ## Pipeline
 
-Логический порядок прогона — от крупного к мелкому:
+The logical order is from coarse to fine:
 
 ```
 editor-ru  →  humanizer-ru  →  proofreader-ru
-(структура)   (ИИ-отпечаток)   (ошибки)
+(structure)   (AI fingerprint)  (errors)
 ```
 
-Сначала наводим порядок в смысле и структуре, потом убираем ИИ-стиль, в конце вычитываем механику. Каждый скилл при этом самодостаточен — если нужен только один слой, запускай только его.
+First put meaning and structure in order, then remove the AI style, finally proofread the mechanics. Each skill is self-sufficient — if you only need one layer, run only that one.
 
-## Скиллы
+## Skills
 
-### editor-ru — структурный редактор
+### editor-ru — structural editor
 
-Оптика «Пиши, сокращай» / Ильяхова. Делает текст плотным и ясным: убирает предложения-воду, сворачивает повторы одной мысли, чинит логические переходы и порядок, расщепляет переусложнённые предложения, выравнивает «обещал — раскрыл».
+The lens of «Пиши, сокращай» / Maxim Ilyakhov. Makes the text dense and clear: removes filler sentences, collapses repeated ideas, fixes logical transitions and ordering, splits overcomplicated sentences, aligns "promised — delivered".
 
-Не трогает ИИ-стилистику и не лезет в орфографию — это другие два скилла. Есть защита от перегиба: не режет до телеграфного стиля и не выкидывает авторские мысли, примеры и цифры.
+Doesn't touch AI stylistics and doesn't go near spelling — those are the other two skills. Has overshoot protection: won't cut down to telegraph style and won't throw out the author's ideas, examples and numbers.
 
-**Когда:** «отредактируй», «много воды», «сократи», «структура хромает», «запутанно», «приведи в порядок».
+**When:** «отредактируй», «много воды», «сократи», «структура хромает», «запутанно», «приведи в порядок».
 
-### humanizer-ru — анти-ИИ для блог-контента
+### humanizer-ru — anti-AI for blog content
 
-Убирает следы генерации из постов и статей (Telegram, vc.ru, Хабр): ИИ-лексику, канцелярит, тире-передоз, парные противопоставления, rule of three, менторский тон, мёртвый ровный ритм. Цель — текст, который мог бы написать грамотный автор со своим голосом, а не разговорный пересказ.
+Removes generation traces from posts and articles (Telegram, vc.ru, Habr): AI vocabulary, bureaucratese, dash overdose, paired constructions, rule of three, mentor tone, dead even rhythm. The goal is text a competent author with their own voice could have written, not a conversational retelling.
 
-Универсальный и нейтральный по голосу. Для академических и юридических текстов есть отдельный вариант (`humanizer-ru-legal`, в этот репозиторий не входит).
+Universal and voice-neutral. A separate variant exists for academic and legal texts (`humanizer-ru-legal`, not included in this repository).
 
-**Когда:** «звучит как ChatGPT», «сделай менее ИИ-шно», «слишком сухо/шаблонно», «выглядит как LinkedIn-пост».
+**When:** «звучит как ChatGPT», «сделай менее ИИ-шно», «слишком сухо/шаблонно», «выглядит как LinkedIn-пост».
 
-### proofreader-ru — корректор
+### proofreader-ru — proofreader
 
-Вычитывает **только механику**: орфография, опечатки, пунктуация, грамматика и согласование, заглавные буквы. Сохраняет авторский голос полностью — сленг, англицизмы, эмодзи, разметку, переносы строк не трогает. Английский текст и типографику (тире/кавычки) не проверяет.
+Proofreads **mechanics only**: spelling, typos, punctuation, grammar and agreement, capitalization. Preserves the author's voice completely — slang, anglicisms, emojis, markup, line breaks are left alone. Doesn't check English text or typography (dashes/quotes).
 
-Главный принцип — консервативность: при любом сомнении не трогать. Сломать намеренный сленг хуже, чем пропустить редкую опечатку.
+The main principle is conservatism: when in doubt, don't touch. Breaking intentional slang is worse than missing a rare typo.
 
-**Когда:** «проверь на ошибки», «вычитай», «корректура», «опечатки есть?».
+**When:** «проверь на ошибки», «вычитай», «корректура», «опечатки есть?».
 
-## Установка
+## Installation
 
 ### Claude (claude.ai)
 
-`Settings → Capabilities → Skills` → загрузить папку каждого скилла.
+`Settings → Capabilities → Skills` → upload each skill's folder.
 
 ### Claude Code
 
-Положить папки скиллов в директорию скиллов проекта:
+Put the skill folders into the project's skills directory:
 
 ```bash
 git clone https://github.com/USERNAME/ru-text-skills.git
@@ -67,9 +69,9 @@ cp -r ru-text-skills/editor-ru ru-text-skills/humanizer-ru ru-text-skills/proofr
    .claude/skills/
 ```
 
-Скиллы подхватятся автоматически и сработают по триггерам из описания.
+The skills are picked up automatically and fire on the triggers from their descriptions.
 
-## Структура
+## Structure
 
 ```
 ru-text-skills/
@@ -80,9 +82,10 @@ ru-text-skills/
 ├── proofreader-ru/
 │   └── SKILL.md
 ├── LICENSE
-└── README.md
+├── README.md
+└── README.ru.md
 ```
 
-## Лицензия
+## License
 
-MIT — делай что хочешь, форкай, правь под себя.
+MIT — do what you want, fork it, adapt it.
